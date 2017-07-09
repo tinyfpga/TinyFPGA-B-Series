@@ -3,4 +3,6 @@ stdout.log
 synlog.tcl
 *~
 *.swp
+*bak
+gerbers/
 
