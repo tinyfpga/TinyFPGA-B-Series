@@ -14,6 +14,8 @@ The heart of the B-series boards is either a ICE40LP4K or ICE40LP8K FPGA from La
 | User IO Pins     |     23      |     23      |
 
 ### Common Features
++ Small form-factor that is breadboard friendly; plenty of space on either side for connecting jumpers or components.
++ Built-in USB interface for programming new FPGA bitstreams and user data to flash.
 + [4MBit of SPI Flash](http://datasheet.octopart.com/AT25SF041-SSHD-B-Adesto-Technologies-datasheet-62342976.pdf)
   + Bootloader bitstream takes up about 1MBit, user design bitstream will take another 1MBit, the rest is free to use for other purposes.
 + 3.3v and 1.2v Regulators
@@ -37,6 +39,7 @@ It is possible to build the TinyFPGA B-Series boards by hand in a home lab.  How
 + [Reflow Oven](http://www.whizoo.com/)
   + I was using an electric griddle to reflow the A-series boards and it worked well enough.  However I didn't bother trying that with the micro BGA package on the B-series boards and I got a reflow oven kit.  This particular kit is excellent.
 + [Lattice FPGA Programmer](https://www.ebay.com/sch/i.html?_productid=533163279)
+  + You will need this to load the bootloader onto the SPI Flash.  Once the bootloader is installed you can use the Python-based programmer application to program the board over USB.
 
 ## Buy TinyFPGA B1 or B2 Boards
 If you don't want to go through the hassle of ordering parts, tools, and supplies and assembling the boards yourself you can order professionally assembled and tested boards from the [TinyFPGA Store](http://store.tinyfpga.com).  These boards are not hobbyist-made, they are fabricated and assembled in a professional PCB fab that manufactures and assembles many other consumer, industrial and military electronics.  They go through an automated testing and programming process to ensure the board is healthy and ready to program over USB.
@@ -50,6 +53,9 @@ FPGA boards with USB bitstream programming capability typically use an expensive
 
 ### programmer
 The bootloader uses a simple protocol over a generic USB serial interface.  This directory contains a Python module for interfacing with the bootloader as well as a friendly Python GUI application for selecting and programming bitstreams.
+
+### template
+This is a template iCEcube2 project for developing your own designs to program onto the board.  It takes care of pin and clock constraints.  Just edit the TinyFPGA_B.v file to add your designs module(s).
 
 ## License
 The TinyFPGA B-Series project is an open source project licensed under GPLv3.  Please see the included LICENSE file for details.  If you do wish to distribute boards derived from this open source hardware project then you must also release the source files for the boards under GPLv3.  You are free to do this, but please improve upon the original design and provide a tangible benefit for users of the board.
