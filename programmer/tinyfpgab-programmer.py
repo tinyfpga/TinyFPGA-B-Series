@@ -111,7 +111,7 @@ def check_port_status_task():
                     serial_port_ready = True;
                     update_button_state()
                 else:
-                    com_port_status_sv.set("Unable to communicate with TinyFPGA. Reconnect and reset TinyFPGA before programming.")
+                    com_port_status_sv.set("Unable to communicate with TinyFPGA. Reset TinyFPGA before programming.")
                     serial_port_ready = False;
                     update_button_state()
 
@@ -258,7 +258,7 @@ program_fpga_b.grid(column=0, row=2, sticky=W+E, padx=10, pady=8)
 def program_failure_task():
     global program_failure
     if program_failure:
-        program_status_sv.set("Programming failed! Reconnect TinyFPGA and try again.")
+        program_status_sv.set("Programming failed! Reset TinyFPGA and try again.")
         program_failure = False
 
     r.after(100, program_failure_task)

@@ -43,6 +43,13 @@ module usb_fs_pe #(
   input [NUM_IN_EPS-1:0] in_ep_stall,
   output [NUM_IN_EPS-1:0] in_ep_acked,
 
+  
+  ////////////////////
+  // sof interface
+  ////////////////////
+  output sof_valid,
+  output [10:0] frame_index,
+
 
 
   ////////////////////////////////////////////////////////////////////////////////
@@ -82,6 +89,10 @@ module usb_fs_pe #(
   wire tx_data_avail;
   wire tx_data_get;
   wire [7:0] tx_data;
+
+  // sof interface
+  assign sof_valid = rx_pkt_end && rx_pkt_valid && rx_pid == 4'b0101;
+  assign frame_index = rx_frame_num;
 
   // d+/d- muxing and interface
   wire usb_output_enable;

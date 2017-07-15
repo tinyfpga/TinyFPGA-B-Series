@@ -2,6 +2,7 @@ module usb_spi_bridge_ep (
   input clk,
   input reset,
 
+
   ////////////////////
   // out endpoint interface 
   ////////////////////
@@ -36,6 +37,7 @@ module usb_spi_bridge_ep (
   output spi_mosi,
   input spi_miso,
 
+  
   ////////////////////
   // warm boot interface
   ////////////////////
@@ -406,5 +408,4 @@ module usb_spi_bridge_ep (
       spi_out_data <= out_ep_data;
     end
   end 
-
 endmodule
