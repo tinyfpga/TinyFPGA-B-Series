@@ -323,10 +323,10 @@ module usb_serial_ctrl_ep (
       'h005 : in_ep_data <= 'h00; // bDeviceSubClass (Abstract Control Model)
       'h006 : in_ep_data <= 'h00; // bDeviceProtocol (No class specific protocol required)
       'h007 : in_ep_data <= 32; // bMaxPacketSize0
-      'h008 : in_ep_data <= 'h00; // idVendor[0]
-      'h009 : in_ep_data <= 'h00; // idVendor[1]
+      'h008 : in_ep_data <= 'h09; // idVendor[0]
+      'h009 : in_ep_data <= 'h12; // idVendor[1]
       'h00A : in_ep_data <= 'h00; // idProduct[0]
-      'h00B : in_ep_data <= 'h00; // idProduct[1]
+      'h00B : in_ep_data <= 'h21; // idProduct[1]
       'h00C : in_ep_data <= 0; // bcdDevice[0]
       'h00D : in_ep_data <= 0; // bcdDevice[1]
       'h00E : in_ep_data <= 0; // iManufacturer

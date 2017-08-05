@@ -78,7 +78,7 @@ def update_serial_port_list_task():
     global program_in_progress
     
     if not program_in_progress:
-        new_tinyfpga_ports = [i[0] for i in comports() if "0000:0000" in i[2]]
+        new_tinyfpga_ports = [i[0] for i in comports() if "1209:1200" in i[2]]
 
         if new_tinyfpga_ports != tinyfpga_ports:
             if com_port_sv.get() == "" and len(new_tinyfpga_ports) > 0:
