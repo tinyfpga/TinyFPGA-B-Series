@@ -42,7 +42,7 @@ It is possible to build the TinyFPGA B-Series boards by hand in a home lab.  How
   + You will need this to load the bootloader onto the SPI Flash.  Once the bootloader is installed you can use the Python-based programmer application to program the board over USB.
 
 ## Buy TinyFPGA B1 or B2 Boards
-If you don't want to go through the hassle of ordering parts, tools, and supplies and assembling the boards yourself you can order professionally assembled and tested boards from the [TinyFPGA Store](http://store.tinyfpga.com).  These boards are not hobbyist-made, they are fabricated and assembled in a professional PCB fab that manufactures and assembles many other consumer, industrial and military electronics.  They go through an automated testing and programming process to ensure the board is healthy and ready to program over USB.
+If you don't want to go through the hassle of ordering parts, tools, and supplies and assembling the boards yourself you can order professionally assembled and tested boards from [Tindie](https://www.tindie.com/stores/tinyfpga/) or the [TinyFPGA Store](http://store.tinyfpga.com).  These boards are not hobbyist-made, they are fabricated and assembled in a professional PCB fab that manufactures and assembles many other consumer, industrial and military electronics.  They go through an automated testing and programming process to ensure the board is healthy and ready to program over USB.
 
 ## Project Directory Structure
 ### board
@@ -56,6 +56,9 @@ The bootloader uses a simple protocol over a generic USB serial interface.  This
 
 ### template
 This is a template iCEcube2 project for developing your own designs to program onto the board.  It takes care of pin and clock constraints.  Just edit the TinyFPGA_B.v file to add your designs module(s).
+
+## Project Log
+For more information on the development and production of the B-Series please read and follow the [TinyFPGA B-Series Project Page](https://hackaday.io/project/26848-tinyfpga-b-series) at hackaday.io.
 
 ## License
 The TinyFPGA B-Series project is an open source project licensed under GPLv3.  Please see the included LICENSE file for details.  If you do wish to distribute boards derived from this open source hardware project then you must also release the source files for the boards under GPLv3.  You are free to do this, but please improve upon the original design and provide a tangible benefit for users of the board.
