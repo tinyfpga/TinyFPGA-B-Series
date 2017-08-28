@@ -41,7 +41,14 @@ module usb_spi_bridge_ep (
   ////////////////////
   // warm boot interface
   ////////////////////
-  output reg boot_to_user_design
+  output reg boot_to_user_design,
+
+
+  ////////////////////
+  // output pin interface for test
+  ////////////////////
+  output reg [31:0] output_pin_values,
+  output reg [31:0] output_pin_enables
 );
 
   wire spi_byte_out_xfr_ready = out_ep_grant && out_ep_data_avail;
@@ -63,6 +70,7 @@ module usb_spi_bridge_ep (
   localparam CMD_IDLE = 0;
   localparam CMD_PRE = 1;
   localparam CMD_OP_BOOT = 2;
+
   //localparam CMD_OP_XFR = 3;
   localparam CMD_SAVE_DOL_LO = 3;
   localparam CMD_SAVE_DOL_HI = 4;
@@ -145,15 +153,25 @@ module usb_spi_bridge_ep (
       end
 
       CMD_PRE : begin
+        get_cmd_out_data <= 1;
+
         if (out_data_ready && out_ep_data == 0) begin
-          get_cmd_out_data <= 1;
           cmd_state_next <= CMD_OP_BOOT;
 
-        end else if (out_data_ready && out_ep_data == 1) begin   
-          get_cmd_out_data <= 1;
+        end else if (out_data_ready && out_ep_data == 1) begin  
           //cmd_state_next <= CMD_OP_XFR;    
           cmd_state_next <= CMD_SAVE_DOL_LO;    
   
+        end else if (out_data_ready && out_ep_data[7]) begin
+          // out_ep_data[6] // output pin value
+          // out_ep_data[5] // output pin enable
+          // out_ep_data[4:0] // output pin id 
+
+          output_pin_values[out_ep_data[4:0]] <= out_ep_data[6];
+          output_pin_enables[out_ep_data[4:0]] <= out_ep_data[5];
+
+          cmd_state_next <= CMD_IDLE;
+
         end else begin
           cmd_state_next <= CMD_IDLE;
         end

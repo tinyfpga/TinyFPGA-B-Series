@@ -124,6 +124,9 @@ module TinyFPGA_B (
 
   wire boot_to_user_design;
 
+  wire [31:0] output_pin_values;
+  wire [31:0] output_pin_enables;
+
   wire reset;
 
   SB_WARMBOOT warmboot_inst (
@@ -190,7 +193,11 @@ module TinyFPGA_B (
     .spi_miso(pin15_sdi),
 
     // warm boot interface
-    .boot_to_user_design(boot_to_user_design)
+    .boot_to_user_design(boot_to_user_design),
+
+    // output pin interface for test
+    .output_pin_values(output_pin_values),
+    .output_pin_enables(output_pin_enables)
   );
 
   wire nak_in_ep_grant;
@@ -253,23 +260,23 @@ module TinyFPGA_B (
     end
   end
 
+  assign pin4 =  output_pin_enables[4]  ? output_pin_values[4]  : 1'bz;
+  assign pin5 =  output_pin_enables[5]  ? output_pin_values[5]  : 1'bz;
+  assign pin6 =  output_pin_enables[6]  ? output_pin_values[6]  : 1'bz;
+  assign pin7 =  output_pin_enables[7]  ? output_pin_values[7]  : 1'bz;
+  assign pin8 =  output_pin_enables[8]  ? output_pin_values[8]  : 1'bz;
+  assign pin9 =  output_pin_enables[9]  ? output_pin_values[9]  : 1'bz;
+  assign pin10 = output_pin_enables[10] ? output_pin_values[10] : 1'bz;
+  assign pin11 = output_pin_enables[11] ? output_pin_values[11] : 1'bz;
+  assign pin12 = output_pin_enables[12] ? output_pin_values[12] : 1'bz;
+  assign pin13 = output_pin_enables[13] ? output_pin_values[13] : 1'bz;
 
-  assign pin4 =  1'bz;
-  assign pin5 =  1'bz;
-  assign pin6 =  1'bz;
-  assign pin7 =  1'bz;
-  assign pin10 = 1'bz;
-  assign pin11 = 1'bz;
-  assign pin12 = 1'b0;
-  assign pin13 = 1'bz;
-  assign pin18 = 1'bz;
-  assign pin19 = 1'bz;
-  assign pin20 = 1'bz;
-  assign pin21 = 1'bz;
-  assign pin22 = 1'bz;
-  assign pin23 = 1'bz;
-  assign pin24 = 1'bz;
-  assign pin8 =  1'bz;
-  assign pin9 =  1'bz;
+  assign pin18 = output_pin_enables[18] ? output_pin_values[18] : 1'bz;
+  assign pin19 = output_pin_enables[19] ? output_pin_values[19] : 1'bz;
+  assign pin20 = output_pin_enables[20] ? output_pin_values[20] : 1'bz;
+  assign pin21 = output_pin_enables[21] ? output_pin_values[21] : 1'bz;
+  assign pin22 = output_pin_enables[22] ? output_pin_values[22] : 1'bz;
+  assign pin23 = output_pin_enables[23] ? output_pin_values[23] : 1'bz;
+  assign pin24 = output_pin_enables[24] ? output_pin_values[24] : 1'bz;
 
 endmodule

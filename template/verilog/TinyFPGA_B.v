@@ -24,13 +24,7 @@ module TinyFPGA_B (
   inout pin23,
   inout pin24
 );
-  wire clk = pin3_clk_16mhz;
 
-  reg [23:0] led_counter;
-
-  always @(posedge clk) begin
-    led_counter <= led_counter + 1;
-  end
 
   // left side of board
   assign pin1_usb_dp = 1'bz;
@@ -43,7 +37,7 @@ module TinyFPGA_B (
   assign pin9 = 1'bz;
   assign pin10 = 1'bz;
   assign pin11 = 1'bz;
-  assign pin12 = led_counter[22];
+  assign pin12 = 1'bz;
   assign pin13 = 1'bz;
 
   // right side of board
