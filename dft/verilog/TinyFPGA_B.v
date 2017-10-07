@@ -74,15 +74,15 @@ module TinyFPGA_B (
   // pulling an input pin low will drive the corresponding
   // output pin low as well.  this is a simple way for the
   // test jig to test all the IOs for opens and shorts
-  assign pin11 = pin17_ss ? 1'bz : 0;
-  assign pin12 = pin1_usb_dp ? 1'bz : 0;
-  assign pin13 = pin2_usb_dn ? 1'bz : 0;
-  assign pin18 = pin4 ? 1'bz : 0;
-  assign pin19 = pin5 ? 1'bz : 0;
-  assign pin20 = pin6 ? 1'bz : 0;
-  assign pin21 = pin7 ? 1'bz : 0;
-  assign pin22 = pin8 ? 1'bz : 0;
-  assign pin23 = pin9 ? 1'bz : 0;
-  assign pin24 = pin10 ? 1'bz : 0;
-  assign pin14_sdo = pin15_sdi ? 1'bz : 0;
+  assign pin11 = pin17_ss ? 0 : 1'bz;
+  assign pin12 = pin1_usb_dp ? 0 : 1'bz;
+  assign pin13 = pin2_usb_dn ? 0 : 1'bz;
+  assign pin18 = pin4 ? 0 : 1'bz;
+  assign pin19 = pin5 ? 0 : 1'bz;
+  assign pin20 = pin6 ? 0 : 1'bz;
+  assign pin21 = pin7 ? 0 : 1'bz;
+  assign pin22 = pin8 ? 0 : 1'bz;
+  assign pin23 = pin9 ? 0 : 1'bz;
+  assign pin24 = pin10 ? 0 : 1'bz;
+  assign pin14_sdo = pin15_sdi ? 0 : 1'bz;
 endmodule
