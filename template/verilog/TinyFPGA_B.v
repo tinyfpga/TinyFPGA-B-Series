@@ -25,7 +25,6 @@ module TinyFPGA_B (
   inout pin24
 );
 
-
   // left side of board
   assign pin1_usb_dp = 1'bz;
   assign pin2_usb_dn = 1'bz;
