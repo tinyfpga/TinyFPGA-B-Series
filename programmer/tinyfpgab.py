@@ -1,6 +1,7 @@
+#!/usr/bin/env python2
+
 import serial
 import array
-
 
 def h(a):
     return ' '.join("%02X" % i for i in a)
@@ -193,15 +194,13 @@ class TinyFPGAB(object):
     def boot(self):
         self.ser.write("\x00")
 
+
     def slurp(self, filename):
         if filename.endswith(".hex"):
             return (0x30000, [int(i, 16) for i in open(filename).read().split()])
 
-        if filename.endswith(".mcs"):
-            ih = IntelHex()
-            ih.loadfile(filename, format='hex')
-            return (0x00000, ih.tobinarray(start=0))
-
+        if filename.endswith(".bin"):
+            return (0x30000, list(bytearray(open(filename, 'rb').read())))
 
 
     def program_bitstream(self, addr, bitstream):
@@ -214,3 +213,80 @@ class TinyFPGAB(object):
         self.progress(str(len(bitstream)) + " bytes to program")
         if self.program(addr, bitstream):
             self.boot()
+
+
+if __name__ == '__main__':
+    import sys
+    import traceback
+    import argparse
+    from serial.tools.list_ports import comports
+
+    p = argparse.ArgumentParser()
+
+    p.add_argument("-l", "--list", action="store_true", help="list connected and active TinyFPGA B-series boards")
+    p.add_argument("-p", "--program", type=str, help="program TinyFPGA board with the given bitstream")
+    p.add_argument("-b", "--boot", action="store_true", help="command the TinyFPGA B-series board to exit the bootloader and load the user configuration")
+    p.add_argument("-c", "--com", type=str, help="serial port name")
+
+    args = p.parse_args()
+
+    print ""
+    print "    TinyFPGA B-series Programmer CLI"
+    print "    --------------------------------"
+
+    active_boards = [p[0] for p in comports() if ("1209:2100" in p[2])]
+
+    active_port = None
+
+    if args.com is not None:
+        active_port = args.com
+    elif len(active_boards) > 0:
+        active_port = active_boards[0]
+
+    if args.list:
+        print "    Boards with active bootloaders:"
+        for p in active_boards:
+            print "        " + p
+        if len(active_boards) == 0:
+            print "        No active bootloaders found.  Check USB connections"
+            print "        and press reset button to activate bootloader."
+
+    if args.program is not None:
+        if active_port is None:
+            print "    No port was specified and no active bootloaders found."
+            print "    Activate bootloader by pressing the reset button."
+            sys.exit()
+
+        print "    Programming " + active_port + " with " + args.program
+
+        def progress(info):
+            if isinstance(info, str):
+                print "    " + info
+
+        with serial.Serial(active_port, 10000000, timeout=0.1, writeTimeout=0.1) as ser:
+            fpga = TinyFPGAB(ser, progress)
+
+            (addr, bitstream) = fpga.slurp(args.program)
+
+            fpga.wake()
+            fpga.read_id()
+
+            try:
+                fpga.program_bitstream(addr, bitstream)
+            except:
+                program_failure = True
+                traceback.print_exc()
+
+    if args.boot: 
+        if active_port is None:
+            print "    No port was specified and no active bootloaders found."
+            print "    Activate bootloader by pressing the reset button."
+            sys.exit()
+
+        print "    Booting " + active_port
+
+        with serial.Serial(active_port, 10000000, timeout=0.1, writeTimeout=0.1) as ser:
+            fpga = TinyFPGAB(ser, None)
+            fpga.boot()
+
+
