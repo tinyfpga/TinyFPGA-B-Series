@@ -98,15 +98,14 @@ class TinyFPGAB(object):
 
 
     def _erase(self, addr, length):
-        opcode = 0
-
         if length == (4 * 1024):
             opcode = 0x20
 
         elif length == (32 * 1024):
             opcode = 0x52
 
-        elif length == (64 * 1024):
+        else:
+            assert length == (64 * 1024)
             opcode = 0xD8
 
         self.write_enable()
