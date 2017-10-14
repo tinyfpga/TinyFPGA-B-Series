@@ -137,7 +137,7 @@ class TinyFPGAB(object):
                 if do_start:
                     start_read_data = self.read(start_addr, start_length)
 
-                do_end = (current_addr & 0xfff000) == ((current_addr + remaining_length - 1) & 0xfff000)
+                do_end = (current_addr & 0xfff000) == ((current_addr + remaining_length) & 0xfff000)
 
                 if do_end: 
                     end_read_data = self.read(end_addr, end_length) 
