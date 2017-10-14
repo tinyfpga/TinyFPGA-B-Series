@@ -1,6 +1,5 @@
 #!/usr/bin/env python2
 
-import serial
 import array
 
 def h(a):
@@ -259,6 +258,7 @@ if __name__ == '__main__':
     import sys
     import traceback
     import argparse
+    import serial
     from serial.tools.list_ports import comports
 
     p = argparse.ArgumentParser()
