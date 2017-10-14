@@ -6,3 +6,4 @@ synlog.tcl
 *bak
 gerbers/
 build/
+*.pyc

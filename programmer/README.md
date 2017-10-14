@@ -1,4 +1,15 @@
-The GUI has been moved to the [TinyFPGA Programmer Application repo](https://github.com/tinyfpga/TinyFPGA-Programmer-Application).  However, the `tinyfpgab.py` script can be used on its own with a command-line interface:
+# Programmer
+
+## GUI
+
+The GUI has been moved to the [TinyFPGA Programmer Application repo][gui-repo].
+However, the `tinyfpgab.py` script can be used on its own with a command-line
+interface:
+
+[gui-repo]: https://github.com/tinyfpga/TinyFPGA-Programmer-Application
+
+
+## CLI
 
 ```
 > python tinyfpgab.py --help
@@ -15,6 +26,7 @@ optional arguments:
 ```
 
 You can list valid ports with the `--list` option:
+
 ```
 > python tinyfpgab.py --list
 
@@ -41,3 +53,10 @@ You can use the `--com` option to specify a specific port.  If you don't specify
     Success!
 
 ```
+
+
+## Testing
+
+The tests can be run with [tox](https://tox.readthedocs.io/): just run the `tox` command.
+
+The code coverage will be generated as HTML pages in the `htmlcov` directory.
