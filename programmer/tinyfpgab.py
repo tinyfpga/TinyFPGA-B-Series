@@ -10,6 +10,7 @@ def h(a):
 class TinyFPGAB(object):
     def __init__(self, ser, progress = None):
         self.ser = ser
+        self.spinner = 0
 
         if progress is None:
             self.progress = lambda x: x
@@ -26,6 +27,7 @@ class TinyFPGAB(object):
         read_length_hi = (cmd_read_len >> 8) & 0xFF
         cmd_write_string = array.array('B', [1, write_length_lo, write_length_hi, read_length_lo, read_length_hi] + list(write_data)).tostring()
         self.ser.write(cmd_write_string)
+        self.ser.flush()
         cmd_read_string = self.ser.read(read_len)
         return array.array('B', cmd_read_string).tolist()
 
@@ -154,8 +156,19 @@ class TinyFPGAB(object):
     def _write(self, addr, data):
         self.write_enable()
         self.cmd([0x02, (addr >> 16) & 0xFF, (addr >> 8) & 0xFF, addr & 0xFF] + list(data), 0)
+
+        # FIXME: this is a workaround for a bug in the bootloader verilog.  if the status
+        #        register read comes too early, then it corrupts the SPI flash write in
+        #        progress.  this busy loop waits long enough such that the write data has
+        #        finished and data corruption is no longer possible.
+        import timeit
+        t = timeit.default_timer()
+        while timeit.default_timer() - t < 0.000060:
+            self.spinner = (self.spinner + 1) & 0xff
+
         self.wait_while_busy()
         self.progress(len(data))
+
 
 
 
@@ -173,6 +186,7 @@ class TinyFPGAB(object):
             remaining_length -= write_length
 
 
+
     def program(self, addr, data):
         self.progress("Erasing designated flash pages")
         self.erase(addr, len(data))
@@ -188,11 +202,17 @@ class TinyFPGAB(object):
             return True
         else:
             self.progress("Verification Failed!")
+
+            for i in range(0, len(data)):
+                if read_back[i] != data[i]:
+                    print "%06x: %02x %02x" % (i, data[i], read_back[i])
+
             return False
 
 
     def boot(self):
         self.ser.write("\x00")
+        self.ser.flush()
 
 
     def slurp(self, filename):
@@ -213,6 +233,9 @@ class TinyFPGAB(object):
         self.progress(str(len(bitstream)) + " bytes to program")
         if self.program(addr, bitstream):
             self.boot()
+
+        # FIXME: printing out this spinner ensures the busy loop in _write isn't optimized away
+        print "Your lucky number: " + str(self.spinner)
 
 
 if __name__ == '__main__':
