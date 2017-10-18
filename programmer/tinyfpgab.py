@@ -17,6 +17,21 @@ class TinyFPGAB(object):
         else:
             self.progress = progress
 
+    def is_bootloader_active(self):
+        for i in range(0, 3):
+            self.wake()
+            self.read(0, 16)
+            self.wake()
+            devid = self.read_id()
+            expected_devid = [0x1F, 0x84, 0x01]
+            if devid == expected_devid:
+                return True
+            else:
+                import time
+                time.sleep(0.05)
+        return False
+
+
     def cmd(self, write_data, read_len):
         write_length_lo = len(write_data) & 0xFF
         write_length_hi = (len(write_data) >> 8) & 0xFF
@@ -233,9 +248,11 @@ class TinyFPGAB(object):
         self.progress(str(len(bitstream)) + " bytes to program")
         if self.program(addr, bitstream):
             self.boot()
+            return True
 
         # FIXME: printing out this spinner ensures the busy loop in _write isn't optimized away
         print "Your lucky number: " + str(self.spinner)
+        return False
 
 
 if __name__ == '__main__':
@@ -286,13 +303,12 @@ if __name__ == '__main__':
             if isinstance(info, str):
                 print "    " + info
 
-        with serial.Serial(active_port, 10000000, timeout=0.1, writeTimeout=0.1) as ser:
+        with serial.Serial(active_port, 115200, timeout=0.2, writeTimeout=0.2) as ser:
             fpga = TinyFPGAB(ser, progress)
 
             (addr, bitstream) = fpga.slurp(args.program)
 
-            fpga.wake()
-            fpga.read_id()
+            fpga.is_bootloader_active()
 
             try:
                 fpga.program_bitstream(addr, bitstream)
