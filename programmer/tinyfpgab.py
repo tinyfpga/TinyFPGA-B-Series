@@ -232,6 +232,8 @@ if __name__ == '__main__':
     parser.add_argument("-d", "--device", type=str, default="1209:2100",
                         help="device id (vendor:product); default is "
                              "TinyFPGA-B (1209:2100)")
+    parser.add_argument("-a", "--addr", type=int,
+                        help="force the address to write the bitstream to")
 
     args = parser.parse_args()
 
@@ -282,9 +284,18 @@ if __name__ == '__main__':
                            writeTimeout=0.2) as ser:
             fpga = TinyFPGAB(ser, progress)
             (addr, bitstream) = fpga.slurp(args.program)
+            if args.addr is not None:
+                addr = args.addr
+            if addr < 0:
+                print "    Negative write addr: {}".format(addr)
+                sys.exit(1)
+            if addr + len(bitstream) >= 0x400000:
+                print "    Write addr over 4Mio: {}".format(addr)
+                sys.exit(1)
             if not fpga.is_bootloader_active():
                 print "    Bootloader not active"
                 sys.exit(1)
+            print "    Programming at addr {:06x}".format(addr)
             if not fpga.program_bitstream(addr, bitstream):
                 sys.exit(1)
 
