@@ -58,6 +58,8 @@ def bitstream_dir():
         f.write(hexdata)
     with open(os.path.join(tmpdir, 'bitstream.bin'), 'wb') as f:
         f.write(DATA)
+    with open(os.path.join(tmpdir, 'bitstream.unknown'), 'w') as f:
+        f.write('???')
     # give the temporary directory to test cases needing it
     yield tmpdir
     # delete temporary directory
@@ -78,7 +80,7 @@ def test_simple_cmds(method, serial_out, serial_in, expected):
     serial = FakeSerial(serial_in.decode('hex'))
     fpga = TinyFPGAB(serial)
     if expected is not None:
-        expected = [ord(c) for c in expected.decode('hex')]
+        expected = expected.decode('hex')
     # run
     output = getattr(fpga, method)()
     # check
@@ -92,7 +94,7 @@ def test_is_bootloader_active(success_after):
     # prepare
     calls = []
     fpga = TinyFPGAB(None)
-    read_id = [[0x42, 0x13, 0x13]] * success_after + [[0x1f, 0x84, 0x01]]
+    read_id = ['ABC'] * success_after + ['\x1f\x84\x01']
     # patching methods
     fpga.wake = lambda *a: calls.append(('wake', a))
     fpga.read = lambda *a: calls.append(('read', a))
@@ -124,11 +126,10 @@ def test_read(length, serial_outs):
     # prepare
     serial = FakeSerial(DATA[:length])
     fpga = TinyFPGAB(serial)
-    expected = [ord(c) for c in DATA[:length]]
     # run
     output = fpga.read(0x123456, length)
     # check
-    assert output == expected
+    assert output == DATA[:length]
     assert not serial.read_data
     serial.assert_written([d.decode('hex') for d in serial_outs])
 
@@ -176,11 +177,10 @@ def test_erase(offset, length, block_len, serial_outs):
     calls = []
     serial = FakeSerial()
     fpga = TinyFPGAB(serial)
-    data_4096 = [ord(c) for c in DATA_4096]
     fpga.write_enable = lambda: None  # patch write_enable
     fpga.wait_while_busy = lambda: None  # patch wait_while_busy
     fpga.read = lambda *a: calls.append(('read', a)) \
-        or data_4096[a[0] % 4096:][:a[1]]
+        or DATA_4096[a[0] % 4096:][:a[1]]
     fpga.write = lambda *a: calls.append(('write', a))
     # run
     assert fpga.erase(offset, length) is None
@@ -195,7 +195,7 @@ def test_erase(offset, length, block_len, serial_outs):
         expected_calls.append((
             'read', (restore_offset, restore_len)))
         expected_calls.append((
-            'write', (restore_offset, data_4096[:restore_len])))
+            'write', (restore_offset, DATA_4096[:restore_len])))
         restore_first_block = restore_offset
     if (offset + length) % block_len > 0:  # restore end of last block
         restore_offset = offset + length
@@ -207,7 +207,7 @@ def test_erase(offset, length, block_len, serial_outs):
         else:
             expected_calls.append(read_call)  # 2nd read after 1st write
         expected_calls.append((
-            'write', (restore_offset, data_4096[restore_offset % block_len:])))
+            'write', (restore_offset, DATA_4096[restore_offset % block_len:])))
     assert calls == expected_calls
 
 
@@ -220,7 +220,7 @@ def test_erase(offset, length, block_len, serial_outs):
     (0x123400, 35, ['011400000002123400546865717569636b62726f776e666f78',
                     '0114000000021234106a756d70736f7665727468656c617a79',
                     '010700000002123420646f67']),
-    # FIXME: for some reason, there is a special case to align on 256 bytes
+    # specific case: write cannot cross 256 bytes boundaries
     (0x1234fd, 5, ['0107000000021234fd546865',
                    '0106000000021235007175']),
 ])
@@ -230,7 +230,7 @@ def test_write(offset, length, serial_outs):
     fpga = TinyFPGAB(serial)
     fpga.write_enable = lambda: None  # patch write_enable
     fpga.wait_while_busy = lambda: None  # patch wait_while_busy
-    data = [ord(c) for c in DATA[:length]]
+    data = DATA[:length]
     # run
     assert fpga.write(offset, data) is None
     # check
@@ -243,23 +243,22 @@ def test_program(success):
     # prepare
     calls = []
     fpga = TinyFPGAB(None, lambda *a: calls.append(('progress', a)))
-    bitstream = [ord(c) for c in DATA]
     # patching methods
     fpga.erase = lambda *a: calls.append(('erase', a))
     fpga.write = lambda *a: calls.append(('write', a))
     if success:
-        fpga.read = lambda *a: calls.append(('read', a)) or bitstream
+        fpga.read = lambda *a: calls.append(('read', a)) or DATA
     else:
-        fpga.read = lambda *a: calls.append(('read', a)) or [84, 13, 37]
+        fpga.read = lambda *a: calls.append(('read', a)) or 'This is a fail'
     # run
-    output = fpga.program(0x123456, bitstream)
+    output = fpga.program(0x123456, DATA)
     # check
     assert output == success
     assert calls == [
         ('progress', ('Erasing designated flash pages', )),
         ('erase', (0x123456, 35)),
         ('progress', ('Writing bitstream', )),
-        ('write', (0x123456, bitstream)),
+        ('write', (0x123456, DATA)),
         ('progress', ('Verifying bitstream', )),
         ('read', (0x123456, 35)),
         ('progress', ('Success!' if success else 'Verification Failed!', )),
@@ -271,13 +270,15 @@ def test_slurp(bitstream_dir, ext):
     # prepare
     fpga = TinyFPGAB(None)
     filename = os.path.join(bitstream_dir, 'bitstream.{}'.format(ext))
-    expected = (0x30000, [ord(c) for c in DATA])
-    if ext == 'unknown':
-        expected = None  # FIXME: maybe the code should raise ValueError?
+    expected = (0x30000, DATA)
     # run
-    output = fpga.slurp(filename)
-    # check
-    assert output == expected
+    if ext == 'unknown':
+        with pytest.raises(ValueError):
+            fpga.slurp(filename)
+    else:
+        output = fpga.slurp(filename)
+        # check
+        assert output == expected
 
 
 @pytest.mark.parametrize('success', [True, False])
@@ -285,7 +286,6 @@ def test_program_bitstream(success):
     # prepare
     calls = []
     fpga = TinyFPGAB(None, lambda *a: calls.append(('progress', a)))
-    bitstream = [ord(c) for c in DATA]
     # patching methods
     fpga.wake = lambda *a: calls.append(('wake', a))
     fpga.read_sts = lambda *a: calls.append(('read_sts', a))
@@ -296,7 +296,7 @@ def test_program_bitstream(success):
         fpga.program = lambda *a: calls.append(('program', a)) or False
     fpga.boot = lambda *a: calls.append(('boot', a))
     # run
-    output = fpga.program_bitstream(0x123456, bitstream)
+    output = fpga.program_bitstream(0x123456, DATA)
     # check
     assert output == success
     expected_calls = [
@@ -305,7 +305,7 @@ def test_program_bitstream(success):
         ('read_sts', ()),
         ('read', (0, 16)),
         ('progress', ('35 bytes to program', )),
-        ('program', (0x123456, bitstream)),
+        ('program', (0x123456, DATA)),
     ]
     if success:
         expected_calls.append(('boot', ()))
