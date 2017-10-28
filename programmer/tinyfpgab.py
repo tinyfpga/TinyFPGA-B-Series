@@ -217,9 +217,10 @@ class TinyFPGAB(object):
         else:
             self.progress("Verification Failed!")
 
-            for i in range(0, len(data)):
+            print "len: %06x %06x" % (len(data), len(read_back))
+            for i in range(min(len(data), len(read_back))):
                 if read_back[i] != data[i]:
-                    print "%06x: %02x %02x" % (i, data[i], read_back[i])
+                    print "diff %06x: %02x %02x" % (i, data[i], read_back[i])
 
             return False
 
