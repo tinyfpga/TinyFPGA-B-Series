@@ -229,6 +229,11 @@ if __name__ == '__main__':
                         help="command the TinyFPGA B-series board to exit the "
                              "bootloader and load the user configuration")
     parser.add_argument("-c", "--com", type=str, help="serial port name")
+    parser.add_argument("-d", "--device", type=str, default="1209:2100",
+                        help="device id (vendor:product); default is "
+                             "TinyFPGA-B (1209:2100)")
+    parser.add_argument("-a", "--addr", type=int,
+                        help="force the address to write the bitstream to")
 
     args = parser.parse_args()
 
@@ -236,7 +241,13 @@ if __name__ == '__main__':
     print "    TinyFPGA B-series Programmer CLI"
     print "    --------------------------------"
 
-    active_boards = [p[0] for p in comports() if ("1209:2100" in p[2])]
+    device = args.device.lower().replace(':', '')
+    if len(device) != 8 or not all(c in '0123456789abcdef' for c in device):
+        print "    Invalid device id, use format vendor:product"
+        sys.exit(1)
+    device = '{}:{}'.format(device[:4], device[4:])
+    print "    Using device id {}".format(device)
+    active_boards = [p[0] for p in comports() if device in p[2]]
 
     # find port to use
     active_port = None
@@ -273,9 +284,18 @@ if __name__ == '__main__':
                            writeTimeout=0.2) as ser:
             fpga = TinyFPGAB(ser, progress)
             (addr, bitstream) = fpga.slurp(args.program)
+            if args.addr is not None:
+                addr = args.addr
+            if addr < 0:
+                print "    Negative write addr: {}".format(addr)
+                sys.exit(1)
+            if addr + len(bitstream) >= 0x400000:
+                print "    Write addr over 4Mio: {}".format(addr)
+                sys.exit(1)
             if not fpga.is_bootloader_active():
                 print "    Bootloader not active"
                 sys.exit(1)
+            print "    Programming at addr {:06x}".format(addr)
             if not fpga.program_bitstream(addr, bitstream):
                 sys.exit(1)
 
