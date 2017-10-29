@@ -1,4 +1,4 @@
-![Build Status](https://travis-ci.org/tinyfpga/TinyFPGA-B-Series.svg?branch=master)
+[<img src="https://travis-ci.org/tinyfpga/TinyFPGA-B-Series.svg?branch=master" />](https://travis-ci.org/tinyfpga/TinyFPGA-B-Series)
 
 # TinyFPGA B-Series
 The TinyFPGA B-Series boards are tiny FPGA boards with a low cost per logic element and convenient USB bitstream programming capability.  They measure just 18mm x 36mm and are a perfect fit for breadboards.  
