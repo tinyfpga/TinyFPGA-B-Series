@@ -4,10 +4,6 @@ import struct
 import time
 
 
-def h(a):
-    return ' '.join("%02X" % i for i in a)
-
-
 class TinyFPGAB(object):
     def __init__(self, ser, progress=None):
         self.ser = ser
