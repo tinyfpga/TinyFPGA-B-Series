@@ -1,0 +1,8 @@
+[run]
+branch = True
+include = tinyfpgab.py
+
+[report]
+exclude_lines =
+    def __repr__
+    if __name__ == .__main__.:
