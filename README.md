@@ -38,8 +38,9 @@ It is possible to build the TinyFPGA B-Series boards by hand in a home lab.  How
 + Some sort of magnifying tool for placing parts ([magnifying glasses](https://www.amazon.com/dp/B01H8808H6), [magnifying lamp](https://www.amazon.com/Brightech-LightView-SuperBright-Magnifier-Adjustable/dp/B00UW2IRJ2), microscope)
 + [Reflow Oven](http://www.whizoo.com/)
   + I was using an electric griddle to reflow the A-series boards and it worked well enough.  However I didn't bother trying that with the micro BGA package on the B-series boards and I got a reflow oven kit.  This particular kit is excellent.
-+ [Lattice FPGA Programmer](https://www.ebay.com/sch/i.html?_productid=533163279)
++ [Lattice FPGA Programmer](https://www.ebay.com/sch/i.html?_productid=533163279) or [Arduino board](https://www.arduino.cc/)
   + You will need this to load the bootloader onto the SPI Flash.  Once the bootloader is installed you can use the Python-based programmer application to program the board over USB.
+  + Look in the [`programmer_arduino`](programmer_arduino) folder to load the bootloader onto the SPI Flash using an Arduino.
 
 ## Buy TinyFPGA B1 or B2 Boards
 If you don't want to go through the hassle of ordering parts, tools, and supplies and assembling the boards yourself you can order professionally assembled and tested boards from [Tindie](https://www.tindie.com/stores/tinyfpga/) or the [TinyFPGA Store](http://store.tinyfpga.com).  These boards are not hobbyist-made, they are fabricated and assembled in a professional PCB fab that manufactures and assembles many other consumer, industrial and military electronics.  They go through an automated testing and programming process to ensure the board is healthy and ready to program over USB.
