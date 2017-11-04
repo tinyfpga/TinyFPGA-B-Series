@@ -67,8 +67,14 @@ class TinyFPGAB(object):
         self.cmd(0x04)
 
     def wait_while_busy(self):
+        # FIXME: this is a workaround for a bug in the bootloader verilog.  if
+        #        the status register read comes too early, then it corrupts the
+        #        SPI flash write in progress.  this busy loop waits long enough
+        #        such that the write data has finished and data corruption is
+        #        no longer possible.
+        self._delay_micros(70)
         while ord(self.read_sts()) & 1:
-            pass
+            self._delay_micros(10)
 
     def _erase(self, addr, length):
         opcode = {
@@ -129,21 +135,17 @@ class TinyFPGAB(object):
             length -= erase_length
             addr += erase_length
 
+    def _delay_micros(self, micros):
+        import timeit
+        seconds = micros / 1000000.0
+        t = timeit.default_timer()
+        while timeit.default_timer() - t < seconds:
+            self.spinner = (self.spinner + 1) & 0xff
+
     # don't use this directly, use the public "write" function instead
     def _write(self, addr, data):
         self.write_enable()
         self.cmd(0x02, addr, data)
-
-        # FIXME: this is a workaround for a bug in the bootloader verilog.  if
-        #        the status register read comes too early, then it corrupts the
-        #        SPI flash write in progress.  this busy loop waits long enough
-        #        such that the write data has finished and data corruption is
-        #        no longer possible.
-        import timeit
-        t = timeit.default_timer()
-        while timeit.default_timer() - t < 0.000060:
-            self.spinner = (self.spinner + 1) & 0xff
-
         self.wait_while_busy()
         self.progress(len(data))
 
