@@ -14,10 +14,14 @@ class TinyFPGAB(object):
             self.progress = progress
 
     def is_bootloader_active(self):
-        for i in range(3):
+        time.sleep(0.1)
+        for i in range(6):
             self.wake()
+            time.sleep(0.001)
             self.read(0, 16)
+            time.sleep(0.001)
             self.wake()
+            time.sleep(0.001)
             devid = self.read_id()
             expected_devid = '\x1f\x84\x01'
             if devid == expected_devid:
@@ -171,16 +175,42 @@ class TinyFPGAB(object):
             self.progress("Success!")
             return True
         else:
-            self.progress("Verification Failed!")
-            print (read_back, data)
+            self.progress("Need to rewrite some pages...")
 
-            print "len: {:06x} {:06x}".format(len(data), len(read_back))
+            self.progress("len: {:06x} {:06x}".format(len(data), len(read_back)))
+            mismatch_4k_pages = set() 
             for i in range(min(len(data), len(read_back))):
                 if read_back[i] != data[i]:
-                    print "diff {:06x}: {:02x} {:02x}".format(
-                        i, ord(data[i]), ord(read_back[i]))
+                    mismatch_4k_pages.add(i >> 12)
 
-            return False
+            for page in mismatch_4k_pages:
+                page_offset = page << 12
+                page_addr = addr + page_offset
+                page_len = 4 * 1024
+                page_data = data[page_offset : page_offset + page_len]
+                self.progress("rewriting page {:06x}".format(page_addr))
+                success = True
+                for attempt in range(6):
+                    self.erase(page_addr, page_len)
+                    self.write(page_addr, page_data)
+                    page_read_back_data = self.read(page_addr, page_len)
+
+                    for i in range(0x1000):
+                        if page_read_back_data[i] != page_data[i]:
+                            self.progress("        diff {:06x}: {:02x} {:02x}".format(i, ord(page_read_back_data[i]), ord(page_data[i])))
+                            success = False
+
+                    if success:
+                        break
+                    else:
+                        time.sleep(0.1)
+
+                if not success:
+                    self.progress("Verification Failed!")
+                    return False
+
+            self.progress("Success!")
+            return True
 
     def boot(self):
         self.ser.write("\x00")
@@ -197,10 +227,10 @@ class TinyFPGAB(object):
 
     def program_bitstream(self, addr, bitstream):
         self.progress("Waking up SPI flash")
-        self.wake()
+        #self.wake()
 
-        self.read_sts()
-        self.read(0, 16)
+        #self.read_sts()
+        #self.read(0, 16)
 
         self.progress(str(len(bitstream)) + " bytes to program")
         if self.program(addr, bitstream):
@@ -282,24 +312,27 @@ if __name__ == '__main__':
             if isinstance(info, str):
                 print "    " + info
 
-        with serial.Serial(active_port, 115200, timeout=0.2,
-                           writeTimeout=0.2) as ser:
-            fpga = TinyFPGAB(ser, progress)
-            (addr, bitstream) = fpga.slurp(args.program)
-            if args.addr is not None:
-                addr = args.addr
-            if addr < 0:
-                print "    Negative write addr: {}".format(addr)
-                sys.exit(1)
-            if addr + len(bitstream) >= 0x400000:
-                print "    Write addr over 4Mio: {}".format(addr)
-                sys.exit(1)
-            if not fpga.is_bootloader_active():
-                print "    Bootloader not active"
-                sys.exit(1)
-            print "    Programming at addr {:06x}".format(addr)
-            if not fpga.program_bitstream(addr, bitstream):
-                sys.exit(1)
+        for attempt in range(3):
+            with serial.Serial(active_port, 115200, timeout=0.2,
+                               writeTimeout=0.2) as ser:
+                fpga = TinyFPGAB(ser, progress)
+                (addr, bitstream) = fpga.slurp(args.program)
+                if args.addr is not None:
+                    addr = args.addr
+                if addr < 0:
+                    print "    Negative write addr: {}".format(addr)
+                    sys.exit(1)
+                if addr + len(bitstream) >= 0x400000:
+                    print "    Write addr over 4Mio: {}".format(addr)
+                    sys.exit(1)
+                if not fpga.is_bootloader_active():
+                    print "    Bootloader not active"
+                    continue
+                print "    Programming at addr {:06x}".format(addr)
+                if fpga.program_bitstream(addr, bitstream):
+                    sys.exit(0)
+                else:
+                    continue
 
     # boot the FPGA
     if args.boot:
