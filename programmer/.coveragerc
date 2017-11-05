@@ -1,6 +1,9 @@
+[paths]
+source =
+	tinyfpgab/
+
 [run]
 branch = True
-include = tinyfpgab.py
 
 [report]
 exclude_lines =
