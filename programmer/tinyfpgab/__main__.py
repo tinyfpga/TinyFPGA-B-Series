@@ -3,6 +3,7 @@ def main():
     import argparse
     import serial
     from serial.tools.list_ports import comports
+    from tinyfpgab import TinyFPGAB
 
     parser = argparse.ArgumentParser()
 
