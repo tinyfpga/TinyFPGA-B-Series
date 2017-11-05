@@ -102,7 +102,7 @@ def test_is_bootloader_active(success_after):
     # run
     output = fpga.is_bootloader_active()
     # check
-    assert output == (success_after < 3)
+    assert output == (success_after < 6)
     expected_calls = [
         ('wake', ()),
         ('read', (0, 16)),
