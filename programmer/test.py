@@ -108,7 +108,7 @@ def test_is_bootloader_active(success_after):
         ('read', (0, 16)),
         ('wake', ()),
         ('read_id', ()),
-    ] * min(success_after + 1, 3)
+    ] * min(success_after + 1, 6)
     assert calls == expected_calls
 
 
@@ -254,15 +254,46 @@ def test_program(success):
     output = fpga.program(0x123456, DATA)
     # check
     assert output == success
-    assert calls == [
+    expected_calls = [
         ('progress', ('Erasing designated flash pages', )),
         ('erase', (0x123456, 35)),
         ('progress', ('Writing bitstream', )),
         ('write', (0x123456, DATA)),
         ('progress', ('Verifying bitstream', )),
         ('read', (0x123456, 35)),
-        ('progress', ('Success!' if success else 'Verification Failed!', )),
     ]
+
+    if success:
+        expected_calls.extend([
+            ('progress', ('Success!',)),
+        ])
+    else:
+        expected_calls.extend([
+            ('progress', ('Need to rewrite some pages...',)),
+            ('progress', ('len: 000023 00000e',)),
+            ('progress', ('rewriting page 123456',)),
+            ('erase', (1193046, 35)),
+            ('write', (1193046, 'Thequickbrownfoxjumpsoverthelazydog')),
+            ('read', (1193046, 35)),
+            ('erase', (1193046, 35)),
+            ('write', (1193046, 'Thequickbrownfoxjumpsoverthelazydog')),
+            ('read', (1193046, 35)),
+            ('erase', (1193046, 35)),
+            ('write', (1193046, 'Thequickbrownfoxjumpsoverthelazydog')),
+            ('read', (1193046, 35)),
+            ('erase', (1193046, 35)),
+            ('write', (1193046, 'Thequickbrownfoxjumpsoverthelazydog')),
+            ('read', (1193046, 35)),
+            ('erase', (1193046, 35)),
+            ('write', (1193046, 'Thequickbrownfoxjumpsoverthelazydog')),
+            ('read', (1193046, 35)),
+            ('erase', (1193046, 35)),
+            ('write', (1193046, 'Thequickbrownfoxjumpsoverthelazydog')),
+            ('read', (1193046, 35)),
+            ('progress', ('Verification Failed!',)),
+        ])
+
+    assert calls == expected_calls
 
 
 @pytest.mark.parametrize('ext', ['hex', 'bin', 'unknown'])
@@ -301,9 +332,6 @@ def test_program_bitstream(success):
     assert output == success
     expected_calls = [
         ('progress', ('Waking up SPI flash', )),
-        ('wake', ()),
-        ('read_sts', ()),
-        ('read', (0, 16)),
         ('progress', ('35 bytes to program', )),
         ('program', (0x123456, DATA)),
     ]

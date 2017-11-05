@@ -177,8 +177,11 @@ class TinyFPGAB(object):
         else:
             self.progress("Need to rewrite some pages...")
 
-            self.progress("len: {:06x} {:06x}".format(len(data), len(read_back)))
-            mismatch_4k_pages = set() 
+            self.progress(
+                "len: {:06x} {:06x}"
+                .format(len(data), len(read_back)))
+
+            mismatch_4k_pages = set()
             for i in range(min(len(data), len(read_back))):
                 if read_back[i] != data[i]:
                     mismatch_4k_pages.add(i >> 12)
@@ -186,8 +189,8 @@ class TinyFPGAB(object):
             for page in mismatch_4k_pages:
                 page_offset = page << 12
                 page_addr = addr + page_offset
-                page_len = 4 * 1024
-                page_data = data[page_offset : page_offset + page_len]
+                page_len = min(4 * 1024, len(data) - page_offset)
+                page_data = data[page_offset:page_offset + page_len]
                 self.progress("rewriting page {:06x}".format(page_addr))
                 success = True
                 for attempt in range(6):
@@ -195,10 +198,18 @@ class TinyFPGAB(object):
                     self.write(page_addr, page_data)
                     page_read_back_data = self.read(page_addr, page_len)
 
-                    for i in range(0x1000):
-                        if page_read_back_data[i] != page_data[i]:
-                            self.progress("        diff {:06x}: {:02x} {:02x}".format(i, ord(page_read_back_data[i]), ord(page_data[i])))
-                            success = False
+                    if len(page_read_back_data) != len(page_data):
+                        success = False
+                    else:
+                        for i in range(page_len):
+                            if page_read_back_data[i] != page_data[i]:
+                                self.progress(
+                                    "        diff {:06x}: {:02x} {:02x}"
+                                    .format(
+                                        i,
+                                        ord(page_read_back_data[i]),
+                                        ord(page_data[i])))
+                                success = False
 
                     if success:
                         break
@@ -227,11 +238,6 @@ class TinyFPGAB(object):
 
     def program_bitstream(self, addr, bitstream):
         self.progress("Waking up SPI flash")
-        #self.wake()
-
-        #self.read_sts()
-        #self.read(0, 16)
-
         self.progress(str(len(bitstream)) + " bytes to program")
         if self.program(addr, bitstream):
             self.boot()
