@@ -1,5 +1,9 @@
 # Programmer
 
+## Directory Structure
+
+The programmer Python code is organized in a Python package.  The actual code for the programmer is located in the `tinyfpgab` directory in the `__init__.py` and `__main__.py` files.  The `setup.py` script is specific to the Python packaging system and should be be executed directly.  If you want to learn more about Python packaging take a look at the [Python packaging documentation](http://python-packaging.readthedocs.io/en/latest/minimal.html).  If you just want to run the programmer on the command-line, the best way is to install it using pip: `pip install tinyfpgab`.  The programmer script will then be added to your `PATH` variable as `tinyfpgab`.
+
 ## GUI
 
 The GUI has been moved to the [TinyFPGA Programmer Application repo][gui-repo].
@@ -19,7 +23,7 @@ Install the commandline tool via Python's pip tool:
 ## CLI Usage
 ```
 > tinyfpgab --help
-usage: tinyfpgab.py [-h] [-l] [-p PROGRAM] [-b] [-c COM]
+usage: tinyfpgab [-h] [-l] [-p PROGRAM] [-b] [-c COM] [-d DEVICE] [-a ADDR]
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -29,6 +33,10 @@ optional arguments:
   -b, --boot            command the TinyFPGA B-series board to exit the
                         bootloader and load the user configuration
   -c COM, --com COM     serial port name
+  -d DEVICE, --device DEVICE
+                        device id (vendor:product); default is TinyFPGA-B
+                        (1209:2100)
+  -a ADDR, --addr ADDR  force the address to write the bitstream to
 ```
 
 You can list valid ports with the `--list` option:
