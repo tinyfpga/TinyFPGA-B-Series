@@ -172,7 +172,7 @@ class TinyFPGAB(object):
             return True
         else:
             self.progress("Verification Failed!")
-            print (read_back, data)
+            #print (read_back, data)
 
             print "len: {:06x} {:06x}".format(len(data), len(read_back))
             for i in range(min(len(data), len(read_back))):
