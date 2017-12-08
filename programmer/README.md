@@ -3,16 +3,22 @@
 ## GUI
 
 The GUI has been moved to the [TinyFPGA Programmer Application repo][gui-repo].
-However, the `tinyfpgab.py` script can be used on its own with a command-line
+However, the `tinyfpgab` module can be used on its own with a command-line
 interface:
 
 [gui-repo]: https://github.com/tinyfpga/TinyFPGA-Programmer-Application
 
 
-## CLI
+## CLI Installation
 
+Install the commandline tool via Python's pip tool:
 ```
-> python tinyfpgab.py --help
+> pip install tinyfpgab
+```
+
+## CLI Usage
+```
+> tinyfpgab --help
 usage: tinyfpgab.py [-h] [-l] [-p PROGRAM] [-b] [-c COM]
 
 optional arguments:
@@ -28,7 +34,7 @@ optional arguments:
 You can list valid ports with the `--list` option:
 
 ```
-> python tinyfpgab.py --list
+> tinyfpgab --list
 
     TinyFPGA B-series Programmer CLI
     --------------------------------
@@ -40,7 +46,7 @@ You can list valid ports with the `--list` option:
 You can use the `--com` option to specify a specific port.  If you don't specify a port, it will use the first one in the list:
 
 ```
-> python tinyfpgab.py --program ..\icestorm_template\TinyFPGA_B.bin
+> tinyfpgab --program ..\icestorm_template\TinyFPGA_B.bin
 
     TinyFPGA B-series Programmer CLI
     --------------------------------
@@ -57,6 +63,6 @@ You can use the `--com` option to specify a specific port.  If you don't specify
 
 ## Testing
 
-The tests can be run with [tox](https://tox.readthedocs.io/): just run the `tox` command.
+The tests can be run with [tox](https://tox.readthedocs.io/): just run the `tox` command.  If you don't have `tox` installed, read the tox documentation and install it first.
 
 The code coverage will be generated as HTML pages in the `htmlcov` directory.
