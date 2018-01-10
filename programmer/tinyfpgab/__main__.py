@@ -36,7 +36,7 @@ def _main():
         sys.exit(1)
     device = '{}:{}'.format(device[:4], device[4:])
     print "    Using device id {}".format(device)
-    active_boards = [p[0] for p in comports() if device in p[2]]
+    active_boards = [p[0] for p in comports() if device in p[2].lower()]
 
     # find port to use
     active_port = None
