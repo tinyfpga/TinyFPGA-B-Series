@@ -50,7 +50,7 @@ class TinyFPGAB(object):
         return self.cmd(0x9f, read_len=3)
 
     def read_sts(self):
-        return self.cmd(0x05, read_len=1)
+        return self.cmd(0x05, read_len=1) or '1'
 
     def read(self, addr, length):
         data = ''
