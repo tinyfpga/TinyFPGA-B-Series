@@ -96,10 +96,9 @@ def main():
                            writeTimeout=0.2) as ser:
             fpga = TinyFPGAB(ser)
             fpga.boot()
-    else:
+    elif args.program is not None:
         # exit with error if programming is not successful
         sys.exit(1)
-
 
 if __name__ == '__main__':
     main()
