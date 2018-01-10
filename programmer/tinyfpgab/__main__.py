@@ -1,7 +1,9 @@
-def main():
-    import sys
+import sys
+import serial
+
+
+def _main():
     import argparse
-    import serial
     from serial.tools.list_ports import comports
     from tinyfpgab import TinyFPGAB
 
@@ -96,6 +98,15 @@ def main():
                            writeTimeout=0.2) as ser:
             fpga = TinyFPGAB(ser)
             fpga.boot()
+
+
+def main():
+    try:
+        _main()
+    except serial.SerialException as e:
+        print "    Error: {}".format(e)
+        sys.exit(1)
+
 
 if __name__ == '__main__':
     main()
