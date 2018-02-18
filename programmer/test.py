@@ -94,7 +94,7 @@ def test_is_bootloader_active(success_after):
     # prepare
     calls = []
     fpga = TinyFPGAB(None)
-    read_id = ['ABC'] * success_after + ['\x1f\x84\x01']
+    read_id = ['ABC'] * success_after + [b'\x1f\x84\x01']
     # patching methods
     fpga.wake = lambda *a: calls.append(('wake', a))
     fpga.read = lambda *a: calls.append(('read', a))

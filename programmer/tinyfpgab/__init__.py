@@ -35,10 +35,8 @@ class TinyFPGAB(object):
         cmd_write_string = b'\x01' + struct.pack(
             '<HH', len(write_string), cmd_read_len) + write_string
         self.ser.write(cmd_write_string)
-        # print("")
         self.ser.flush()
-        d = self.ser.read(read_len)
-        return d
+        return self.ser.read(read_len)
 
     def sleep(self):
         self.cmd(0xb9)
