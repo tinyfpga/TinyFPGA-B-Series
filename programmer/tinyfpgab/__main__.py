@@ -26,16 +26,16 @@ def _main():
 
     args = parser.parse_args()
 
-    print ""
-    print "    TinyFPGA B-series Programmer CLI"
-    print "    --------------------------------"
+    print("")
+    print("    TinyFPGA B-series Programmer CLI")
+    print("    --------------------------------")
 
     device = args.device.lower().replace(':', '')
     if len(device) != 8 or not all(c in '0123456789abcdef' for c in device):
-        print "    Invalid device id, use format vendor:product"
+        print("    Invalid device id, use format vendor:product")
         sys.exit(1)
     device = '{}:{}'.format(device[:4], device[4:])
-    print "    Using device id {}".format(device)
+    print("    Using device id {}".format(device))
     active_boards = [p[0] for p in comports() if device in p[2].lower()]
 
     # find port to use
@@ -43,31 +43,31 @@ def _main():
     if args.com is not None:
         active_port = args.com
     elif not active_boards:
-        print "    No port was specified and no active bootloaders found."
-        print "    Activate bootloader by pressing the reset button."
+        print("    No port was specified and no active bootloaders found.")
+        print("    Activate bootloader by pressing the reset button.")
         sys.exit(1)
     elif len(active_boards) == 1:
-        print "    Only one board with active bootloader, using it."
+        print("    Only one board with active bootloader, using it.")
         active_port = active_boards[0]
     else:
-        print "    Please choose a board with the -c option."
+        print("    Please choose a board with the -c option.")
 
     # list boards
     if args.list or active_port is None:
-        print "    Boards with active bootloaders:"
+        print("    Boards with active bootloaders:")
         for p in active_boards:
-            print "        " + p
+            print("        " + p)
         if len(active_boards) == 0:
-            print "        No active bootloaders found.  Check USB connections"
-            print "        and press reset button to activate bootloader."
+            print("       No active bootloaders found.  Check USB connections")
+            print("       and press reset button to activate bootloader.")
 
     # program the flash memory
     elif args.program is not None:
-        print "    Programming " + active_port + " with " + args.program
+        print("    Programming " + active_port + " with " + args.program)
 
         def progress(info):
             if isinstance(info, str):
-                print "    " + info
+                print("    " + info)
 
         for attempt in range(3):
             with serial.Serial(active_port, 115200, timeout=0.2,
@@ -77,15 +77,16 @@ def _main():
                 if args.addr is not None:
                     addr = args.addr
                 if addr < 0:
-                    print "    Negative write addr: {}".format(addr)
+                    print("    Negative write addr: {}".format(addr))
                     sys.exit(1)
                 if addr + len(bitstream) >= 0x400000:
-                    print "    Write addr over 4Mio: {}".format(addr)
+                    print("    Write addr over 4Mio: {}".format(addr))
                     sys.exit(1)
+                fpga.is_bootloader_active()
                 if not fpga.is_bootloader_active():
-                    print "    Bootloader not active"
+                    print("    Bootloader not active")
                     continue
-                print "    Programming at addr {:06x}".format(addr)
+                print("    Programming at addr {:06x}".format(addr))
                 if fpga.program_bitstream(addr, bitstream):
                     sys.exit(0)
                 else:
@@ -93,7 +94,7 @@ def _main():
 
     # boot the FPGA
     if args.boot:
-        print "    Booting " + active_port
+        print("    Booting " + active_port)
         with serial.Serial(active_port, 115200, timeout=0.2,
                            writeTimeout=0.2) as ser:
             fpga = TinyFPGAB(ser)
@@ -107,7 +108,7 @@ def main():
     try:
         _main()
     except serial.SerialException as e:
-        print "    Error: {}".format(e)
+        print("    Error: {}".format(e))
         sys.exit(1)
 
 

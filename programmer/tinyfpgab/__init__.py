@@ -21,24 +21,24 @@ class TinyFPGAB(object):
             self.wake()
             time.sleep(0.001)
             devid = self.read_id()
-            expected_devid = '\x1f\x84\x01'
+            expected_devid = b'\x1f\x84\x01'
             if devid == expected_devid:
                 return True
             time.sleep(0.05)
         return False
 
-    def cmd(self, opcode, addr=None, data='', read_len=0):
-        assert isinstance(data, str)
+    def cmd(self, opcode, addr=None, data=b'', read_len=0):
+        assert isinstance(data, bytes)
         cmd_read_len = read_len + 1 if read_len else 0
-        addr = '' if addr is None else struct.pack('>I', addr)[1:]
-        write_string = chr(opcode) + addr + data
-        cmd_write_string = '\x01{}{}'.format(
-            struct.pack('<HH', len(write_string), cmd_read_len),
-            write_string,
-        )
+        addr = b'' if addr is None else struct.pack('>I', addr)[1:]
+        write_string = bytes([opcode]) + addr + data
+        cmd_write_string = b'\x01' + struct.pack(
+            '<HH', len(write_string), cmd_read_len) + write_string
         self.ser.write(cmd_write_string)
+        # print("")
         self.ser.flush()
-        return self.ser.read(read_len)
+        d = self.ser.read(read_len)
+        return d
 
     def sleep(self):
         self.cmd(0xb9)
@@ -53,10 +53,10 @@ class TinyFPGAB(object):
         return self.cmd(0x05, read_len=1) or '1'
 
     def read(self, addr, length):
-        data = ''
+        data = b''
         while length > 0:
             read_length = min(16, length)
-            data += self.cmd(0x0b, addr, '\x00', read_len=read_length)
+            data += self.cmd(0x0b, addr, b'\x00', read_len=read_length)
             self.progress(read_length)
             addr += read_length
             length -= read_length
@@ -222,7 +222,7 @@ class TinyFPGAB(object):
             return True
 
     def boot(self):
-        self.ser.write("\x00")
+        self.ser.write(b"\x00")
         self.ser.flush()
 
     def slurp(self, filename):
@@ -230,6 +230,8 @@ class TinyFPGAB(object):
             bitstream = f.read()
         if filename.endswith('.hex'):
             bitstream = ''.join(chr(int(i, 16)) for i in bitstream.split())
+            print("Bitstream type: {}".format(type(bitstream)))
+            bitstream = str.encode(bitstream)
         elif not filename.endswith('.bin'):
             raise ValueError('Unknown bitstream extension')
         return (0x30000, bitstream)
@@ -243,6 +245,6 @@ class TinyFPGAB(object):
 
         # FIXME: printing out this spinner ensures the busy loop in _write is
         #        not optimized away
-        print "Your lucky number: " + str(self.spinner)
+        print("Your lucky number: " + str(self.spinner))
 
         return False
