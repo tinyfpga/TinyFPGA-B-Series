@@ -1,6 +1,7 @@
 .cache
 .coverage
 .tox
+.pytest_cache
 __pycache__
 htmlcov
 build

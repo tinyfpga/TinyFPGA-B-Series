@@ -31,10 +31,10 @@ class TinyFPGAB(object):
         assert isinstance(data, bytes)
         cmd_read_len = read_len + 1 if read_len else 0
         addr = b'' if addr is None else struct.pack('>I', addr)[1:]
-        write_string = bytes([opcode]) + addr + data
+        write_string = bytearray([opcode]) + addr + data
         cmd_write_string = b'\x01' + struct.pack(
             '<HH', len(write_string), cmd_read_len) + write_string
-        self.ser.write(cmd_write_string)
+        self.ser.write(bytearray(cmd_write_string))
         self.ser.flush()
         return self.ser.read(read_len)
 
@@ -220,7 +220,7 @@ class TinyFPGAB(object):
             return True
 
     def boot(self):
-        self.ser.write(b"\x00")
+        self.ser.write(bytearray([0x00]))
         self.ser.flush()
 
     def slurp(self, filename):

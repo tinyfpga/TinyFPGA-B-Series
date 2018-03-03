@@ -19,7 +19,7 @@ class FakeSerial(object):
         self.read_data = read_data
 
     def write(self, data):
-        assert isinstance(data, bytes)
+        assert isinstance(data, bytearray)
         self.written.append(data)
 
     def read(self, read_len):
@@ -35,7 +35,7 @@ class FakeSerial(object):
         # insert True after each write (for flush calls)
         expected = []
         for part in parts:
-            expected.append(str(part))
+            expected.append(part)
             expected.append(True)
         # test
         assert self.written == expected
