@@ -5,21 +5,21 @@ import string
 import tempfile
 from tinyfpgab import TinyFPGAB
 
-DATA = 'Thequickbrownfoxjumpsoverthelazydog'
+DATA = b'Thequickbrownfoxjumpsoverthelazydog'
 DATA_4096 = ''.join(a + b + c
-                    for a in string.uppercase
-                    for b in string.lowercase
+                    for a in string.ascii_uppercase
+                    for b in string.ascii_lowercase
                     for c in string.digits)[:4096]
 
 
 class FakeSerial(object):
 
-    def __init__(self, read_data=''):
+    def __init__(self, read_data=b''):
         self.written = []  # str instance if data written, True if flush call
         self.read_data = read_data
 
     def write(self, data):
-        assert isinstance(data, str)
+        assert isinstance(data, bytearray)
         self.written.append(data)
 
     def read(self, read_len):
@@ -50,7 +50,8 @@ def bitstream_dir():
 6f 77 6e 66 6f 78 6a 75 6d 70 73 6f 76 65 72 74 68 65 6c 61 7a 79 64
 6f 67
     '''.strip() + '\n\n'
-    assert hexdata.replace(' ', '').replace('\n', '').decode('hex') == DATA
+    data = bytearray.fromhex(hexdata.replace(' ', '').replace('\n', ''))
+    assert data == DATA
     # create temporary directory
     tmpdir = tempfile.mkdtemp()
     # create the files
@@ -77,16 +78,16 @@ def bitstream_dir():
 ])
 def test_simple_cmds(method, serial_out, serial_in, expected):
     # prepare
-    serial = FakeSerial(serial_in.decode('hex'))
+    serial = FakeSerial(bytearray.fromhex(serial_in))
     fpga = TinyFPGAB(serial)
     if expected is not None:
-        expected = expected.decode('hex')
+        expected = bytearray.fromhex(expected)
     # run
     output = getattr(fpga, method)()
     # check
     assert output == expected
     assert not serial.read_data
-    serial.assert_written([serial_out.decode('hex')])
+    serial.assert_written([bytearray.fromhex(serial_out)])
 
 
 @pytest.mark.parametrize('success_after', range(5))
@@ -94,7 +95,7 @@ def test_is_bootloader_active(success_after):
     # prepare
     calls = []
     fpga = TinyFPGAB(None)
-    read_id = ['ABC'] * success_after + ['\x1f\x84\x01']
+    read_id = ['ABC'] * success_after + [b'\x1f\x84\x01']
     # patching methods
     fpga.wake = lambda *a: calls.append(('wake', a))
     fpga.read = lambda *a: calls.append(('read', a))
@@ -131,18 +132,18 @@ def test_read(length, serial_outs):
     # check
     assert output == DATA[:length]
     assert not serial.read_data
-    serial.assert_written([d.decode('hex') for d in serial_outs])
+    serial.assert_written([bytearray.fromhex(d) for d in serial_outs])
 
 
 def test_wait_while_busy():
     # prepare
-    serial = FakeSerial('0101010100'.decode('hex'))
+    serial = FakeSerial(bytearray.fromhex('0101010100'))
     fpga = TinyFPGAB(serial)
     # run
     assert fpga.wait_while_busy() is None
     # check
     assert not serial.read_data
-    serial.assert_written(['010100020005'.decode('hex')] * 5)
+    serial.assert_written([bytearray.fromhex('010100020005')] * 5)
 
 
 @pytest.mark.parametrize('offset, length, block_len, serial_outs', [
@@ -186,7 +187,7 @@ def test_erase(offset, length, block_len, serial_outs):
     assert fpga.erase(offset, length) is None
     # check
     assert not serial.read_data
-    serial.assert_written([d.decode('hex') for d in serial_outs])
+    serial.assert_written([bytearray.fromhex(d) for d in serial_outs])
     expected_calls = []
     restore_first_block = None
     if offset % block_len > 0:  # restore start of first block
@@ -235,7 +236,7 @@ def test_write(offset, length, serial_outs):
     assert fpga.write(offset, data) is None
     # check
     assert not serial.read_data
-    serial.assert_written([d.decode('hex') for d in serial_outs])
+    serial.assert_written([bytearray.fromhex(d) for d in serial_outs])
 
 
 @pytest.mark.parametrize('success', [True, False])
@@ -273,22 +274,22 @@ def test_program(success):
             ('progress', ('len: 000023 00000e',)),
             ('progress', ('rewriting page 123456',)),
             ('erase', (1193046, 35)),
-            ('write', (1193046, 'Thequickbrownfoxjumpsoverthelazydog')),
+            ('write', (1193046, b'Thequickbrownfoxjumpsoverthelazydog')),
             ('read', (1193046, 35)),
             ('erase', (1193046, 35)),
-            ('write', (1193046, 'Thequickbrownfoxjumpsoverthelazydog')),
+            ('write', (1193046, b'Thequickbrownfoxjumpsoverthelazydog')),
             ('read', (1193046, 35)),
             ('erase', (1193046, 35)),
-            ('write', (1193046, 'Thequickbrownfoxjumpsoverthelazydog')),
+            ('write', (1193046, b'Thequickbrownfoxjumpsoverthelazydog')),
             ('read', (1193046, 35)),
             ('erase', (1193046, 35)),
-            ('write', (1193046, 'Thequickbrownfoxjumpsoverthelazydog')),
+            ('write', (1193046, b'Thequickbrownfoxjumpsoverthelazydog')),
             ('read', (1193046, 35)),
             ('erase', (1193046, 35)),
-            ('write', (1193046, 'Thequickbrownfoxjumpsoverthelazydog')),
+            ('write', (1193046, b'Thequickbrownfoxjumpsoverthelazydog')),
             ('read', (1193046, 35)),
             ('erase', (1193046, 35)),
-            ('write', (1193046, 'Thequickbrownfoxjumpsoverthelazydog')),
+            ('write', (1193046, b'Thequickbrownfoxjumpsoverthelazydog')),
             ('read', (1193046, 35)),
             ('progress', ('Verification Failed!',)),
         ])
