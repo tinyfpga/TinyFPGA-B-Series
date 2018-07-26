@@ -1,7 +1,10 @@
 [<img src="https://travis-ci.org/tinyfpga/TinyFPGA-B-Series.svg?branch=master" />](https://travis-ci.org/tinyfpga/TinyFPGA-B-Series)
 
-# TinyFPGA B-Series
-The TinyFPGA B-Series boards are tiny FPGA boards with a low cost per logic element and convenient USB bitstream programming capability.  They measure just 18mm x 36mm and are a perfect fit for breadboards.  
+# TinyFPGA B2 Board
+The TinyFPGA B2 board is a tiny FPGA board with a low cost per logic element and convenient USB bitstream programming capability.  It measures just 18mm x 36mm and is a perfect fit for breadboards.  
+
+# TinyFPGA BX Repo has Moved
+If you are looking for the TinyFPGA BX design files and examples, it is in a seperate repository: [TinyFPGA BX GitHub Repo](https://github.com/tinyfpga/TinyFPGA-BX).
 
 ## Features
 The heart of the B-series boards is either a ICE40LP4K or ICE40LP8K FPGA from Lattice.  For full details on the ICE40 series of FPGAs you can read the [ICE40 Family Handbook](http://www.latticesemi.com/~/media/LatticeSemi/Documents/Handbooks/iCE40FamilyHandbook.pdf).
